@@ -1,0 +1,41 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="GPL-3.0-only"
+issueTrackerURL="https://github.com/Xuan-crane/simple-autopilot-immersive-aircraft/issues"
+
+[[mods]]
+modId="aircraft_autoforward"
+version="1.2.1"
+displayName="简单自动驾驶沉浸式飞机 / Simple Autopilot for Immersive Aircraft"
+displayURL="https://github.com/Xuan-crane/simple-autopilot-immersive-aircraft"
+authors="Xuan-crane"
+description='''
+Client-side automatic forward input and experimental terrain-relative altitude hold.
+Supports all seven original Immersive Aircraft aircraft with separate airplane pitch/throttle controls.
+V: independent forward toggle. H: independent altitude toggle. Page Up/Down: clearance +/- 2.
+Enabled axes keep automatic control regardless of other keys, screens or window focus.
+'''
+
+[[mixins]]
+config="aircraft_autoforward.mixins.json"
+
+[[dependencies.aircraft_autoforward]]
+modId="neoforge"
+type="required"
+versionRange="[21.1.1,21.2)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.aircraft_autoforward]]
+modId="minecraft"
+type="required"
+versionRange="[1.21.1]"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.aircraft_autoforward]]
+modId="immersive_aircraft"
+type="required"
+versionRange="[1.5.0,1.6)"
+ordering="AFTER"
+side="CLIENT"

@@ -1,0 +1,54 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.148'
+}
+
+group = 'dev.xuancrane'
+version = '1.2.1'
+base.archivesName = 'simple-autopilot-immersive-aircraft-1.21.1-neoforge'
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    withSourcesJar()
+}
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://api.modrinth.com/maven' }
+}
+
+neoForge {
+    enable {
+        version = '21.1.1'
+        disableRecompilation = true
+    }
+    runs {
+        client {
+            client()
+            systemProperty 'mixin.debug.export', 'true'
+        }
+    }
+    mods {
+        aircraft_autoforward { sourceSet sourceSets.main }
+    }
+}
+
+dependencies {
+    implementation 'maven.modrinth:immersive-aircraft:8YWxZfqK'
+    testImplementation platform('org.junit:junit-bom:5.11.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.ow2.asm:asm-tree:9.7.1'
+}
+
+tasks.named('test', Test) {
+    useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.named('jar', Jar) {
+    manifest.attributes('Implementation-Version': project.version)
+}
