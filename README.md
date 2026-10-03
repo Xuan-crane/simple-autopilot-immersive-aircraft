@@ -6,7 +6,7 @@ Client-side independent auto-forward and experimental terrain-relative altitude 
 
 Install ONE jar matching your Minecraft version AND loader. Replace the previous addon jar. Do not install all jars or a sources/development jar. Fabric needs Fabric API for the same Minecraft version. Install Immersive Aircraft and its required dependencies as usual; the server does not need this addon.
 
-| Minecraft | Loaders | Java | Verified Immersive Aircraft versions |
+| Minecraft | Loaders | Java | Immersive Aircraft versions |
 |---|---|---|---|
 |1.20.1|Forge / Fabric|17+|1.5.0|
 |1.21.1|NeoForge / Fabric|21+|1.5.0 and 1.5.2|
@@ -34,15 +34,11 @@ Settings are stored in `config/aircraft_autoforward.properties` inside the Minec
 
 The flight controllers, existing four key bindings and lifecycle reset rules are unchanged from 1.3.0. This update does not add navigation, absolute-world-Y mode or automatic turns.
 
-## Validation
-
-Ten actual production builds and 636 automated test cases passed, with independent artifact/source checks. No game was launched for this release; actual loading, HUD/settings appearance, flight and multiplayer behavior need player testing. Use a backed-up test world first. Report the game/loader/original-mod versions, jar filename, aircraft type, enabled modes, reproduction steps and crash report if relevant.
-
 ## Source and license
 
 Each game/loader directory in the source archive is a separate Gradle project with its own wrapper. Run `gradlew.bat build --no-daemon --max-workers=2` using the Java version above. 1.20.1 Forge uses reobfJar; Fabric 1.x uses remapJar; 26.x builds use the official unobfuscated toolchain. Publish only production jars from build/libs.
 
-GPL-3.0-only. [Source](https://github.com/Xuan-crane/simple-autopilot-immersive-aircraft). Requires [Immersive Aircraft](https://modrinth.com/mod/immersive-aircraft) by Luke100000. The addon does not bundle Minecraft, a loader or the original mod. See README_ZH.md for Chinese instructions and the flight test checklist.
+GPL-3.0-only. [Source](https://github.com/Xuan-crane/simple-autopilot-immersive-aircraft). Requires [Immersive Aircraft](https://modrinth.com/mod/immersive-aircraft) by Luke100000. The addon does not bundle Minecraft, a loader or the original mod. See README_ZH.md for Chinese instructions.
 
 ## Repository layout
 
