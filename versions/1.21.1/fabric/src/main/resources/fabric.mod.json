@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "id": "aircraft_autoforward",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "name": "Simple Autopilot for Immersive Aircraft",
-  "description": "Client-side independent auto-forward and terrain-following altitude controls. V/H toggle, Page Up/Down adjusts clearance.",
+  "description": "Client-side independent forward and terrain-relative altitude assistance, cached HUD, and persistent client preferences. Alpha.",
   "authors": [
     "Xuan-crane"
   ],

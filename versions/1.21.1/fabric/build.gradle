@@ -3,7 +3,7 @@ plugins {
     id 'maven-publish'
 }
 group = 'dev.xuancrane'
-version = '1.3.0'
+version = '1.4.0'
 base.archivesName = 'simple-autopilot-immersive-aircraft-1.21.1-fabric'
 java { toolchain.languageVersion = JavaLanguageVersion.of(21); withSourcesJar() }
 repositories { mavenCentral(); maven { url = 'https://api.modrinth.com/maven' } }
@@ -33,4 +33,9 @@ dependencies {
 tasks.named('test', Test) {
     systemProperty 'upstream.low', configurations.aircraftCompatibilityBaseline.singleFile.absolutePath
     systemProperty 'upstream.current', configurations.aircraftCompatibilityCurrent.singleFile.absolutePath
+}
+
+// Optional external build directory keeps large generated artifacts off the source drive.
+if (providers.gradleProperty('autopilotBuildDir').isPresent()) {
+    layout.buildDirectory = file(providers.gradleProperty('autopilotBuildDir').get())
 }

@@ -5,14 +5,14 @@ issueTrackerURL="https://github.com/Xuan-crane/simple-autopilot-immersive-aircra
 
 [[mods]]
 modId="aircraft_autoforward"
-version="1.3.0"
-displayName="简单自动驾驶沉浸式飞机 / Simple Autopilot for Immersive Aircraft 1.3.0 Alpha"
+version="1.4.0"
+displayName="简单自动驾驶沉浸式飞机 / Simple Autopilot for Immersive Aircraft 1.4.0 Alpha"
 displayURL="https://github.com/Xuan-crane/simple-autopilot-immersive-aircraft"
 authors="Xuan-crane"
 description='''
 Client-side automatic forward input and experimental terrain-relative altitude hold.
 Supports all seven original Immersive Aircraft aircraft with separate airplane pitch/throttle controls.
-V: independent forward toggle. H: independent altitude toggle. Page Up/Down: clearance +/- 2.
+V: independent forward toggle. H: independent altitude toggle. Page Up/Down: configurable clearance step (default 2). Unbound settings key; persistent HUD.
 Enabled axes keep automatic control regardless of other keys, screens or window focus.
 '''
 

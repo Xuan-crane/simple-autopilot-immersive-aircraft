@@ -13,6 +13,13 @@ public final class CruiseState {
     public boolean heightEnabled() { return heightEnabled; }
     public boolean forwardEnabled() { return forwardEnabled; }
     public int targetHeight() { return targetHeight; }
+    public int setTargetHeight(int height) {
+        targetHeight = Math.max(4, Math.min(64, height));
+        return targetHeight;
+    }
+    public boolean belongsTo(Object currentWorld, UUID currentVehicle) {
+        return isActive() && world == currentWorld && vehicle != null && vehicle.equals(currentVehicle);
+    }
     public int adjustHeight(int delta) {
         targetHeight = (int) Math.max(4L, Math.min(64L, (long) targetHeight + delta));
         return targetHeight;

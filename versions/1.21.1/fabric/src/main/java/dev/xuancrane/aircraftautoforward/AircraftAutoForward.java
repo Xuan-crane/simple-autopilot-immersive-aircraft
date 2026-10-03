@@ -8,6 +8,7 @@ import immersive_aircraft.entity.AirplaneEntity;
 import immersive_aircraft.item.upgrade.VehicleStat;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -19,11 +20,15 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 
 import java.util.Set;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 
 public final class AircraftAutoForward implements ClientModInitializer {
     public static final String MOD_ID = "aircraft_autoforward";
     private static final Set<String> SUPPORTED = Set.of("airship", "cargo_airship", "warship", "gyrodyne",
             "biplane", "quadrocopter", "bamboo_hopper");
+    private static final ClientPreferences PREFERENCES = new ClientPreferences(Minecraft.getInstance().gameDirectory.toPath()
+            .resolve("config").resolve("aircraft_autoforward.properties"));
+    private static final FlightTelemetry TELEMETRY = new FlightTelemetry();
     private static final CruiseState STATE = new CruiseState();
     private static String lastWarning = "";
     private static long lastWarningNanos;
@@ -32,6 +37,7 @@ public final class AircraftAutoForward implements ClientModInitializer {
     private static final KeyMapping HEIGHT = key("height", GLFW.GLFW_KEY_H);
     private static final KeyMapping HIGHER = key("higher", GLFW.GLFW_KEY_PAGE_UP);
     private static final KeyMapping LOWER = key("lower", GLFW.GLFW_KEY_PAGE_DOWN);
+    private static final KeyMapping SETTINGS = key("settings", GLFW.GLFW_KEY_UNKNOWN);
 
     private static KeyMapping key(String name, int code) {
         return new KeyMapping("key.aircraft_autoforward." + name,     InputConstants.Type.KEYSYM, code, "key.categories.aircraft_autoforward");
@@ -39,10 +45,13 @@ public final class AircraftAutoForward implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        STATE.setTargetHeight(PREFERENCES.get().targetHeight());
+        HudRenderCallback.EVENT.register((graphics, tick) -> renderHud(graphics));
         KeyBindingHelper.registerKeyBinding(TOGGLE);
         KeyBindingHelper.registerKeyBinding(HEIGHT);
         KeyBindingHelper.registerKeyBinding(HIGHER);
         KeyBindingHelper.registerKeyBinding(LOWER);
+        KeyBindingHelper.registerKeyBinding(SETTINGS);
         ClientTickEvents.START_CLIENT_TICK.register(this::beforeTick);
         ClientTickEvents.END_CLIENT_TICK.register(this::afterTick);
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> logout());
@@ -76,6 +85,7 @@ public final class AircraftAutoForward implements ClientModInitializer {
         if (STATE.validate(client.level, vehicle == null ? null : vehicle.getUUID(), vehicle != null)) {
             show("reset");
         }
+        if (!STATE.heightEnabled()) TELEMETRY.reset();
         return vehicle;
     }
 
@@ -87,6 +97,7 @@ public final class AircraftAutoForward implements ClientModInitializer {
 
     private static void warning(String key) {
         long now = System.nanoTime();
+        TELEMETRY.paused(key, now);
         if (!key.equals(lastWarning) || now - lastWarningNanos > 3_000_000_000L) {
             show(key);
             lastWarning = key;
@@ -104,6 +115,13 @@ public final class AircraftAutoForward implements ClientModInitializer {
             drainKeys();
             return;
         }
+        while (SETTINGS.consumeClick()) {
+            Minecraft client = Minecraft.getInstance();
+            client.setScreen(new AutopilotSettingsScreen(client.screen, PREFERENCES.get(),
+                    AircraftAutoForward::saveSettings, PREFERENCES.loadFailed()));
+            drainKeys();
+            return;
+        }
         while (TOGGLE.consumeClick()) {
             if (vehicle != null) {
                 show(STATE.toggle(Minecraft.getInstance().level, vehicle.getUUID()) ? "on" : "off");
@@ -114,30 +132,55 @@ public final class AircraftAutoForward implements ClientModInitializer {
         while (HEIGHT.consumeClick()) {
             if (vehicle != null) {
                 boolean active = STATE.toggleHeight(Minecraft.getInstance().level, vehicle.getUUID());
+                TELEMETRY.reset();
                 show(active ? "height_on" : "height_off", STATE.targetHeight());
             } else if (Minecraft.getInstance().screen == null && Minecraft.getInstance().player != null) {
                 show("unavailable");
             }
         }
         while (HIGHER.consumeClick()) {
-            if (vehicle != null) show("target_height", STATE.adjustHeight(2));
+            if (vehicle != null) adjustTarget(PREFERENCES.get().heightStep());
         }
         while (LOWER.consumeClick()) {
-            if (vehicle != null) show("target_height", STATE.adjustHeight(-2));
+            if (vehicle != null) adjustTarget(-PREFERENCES.get().heightStep());
         }
     }
 
     private void logout() {
         STATE.clear();
+        TELEMETRY.reset();
         drainKeys();
     }
 
     private static void drainKeys() {
-        for (KeyMapping mapping : new KeyMapping[]{TOGGLE, HEIGHT, HIGHER, LOWER}) {
+        for (KeyMapping mapping : new KeyMapping[]{TOGGLE, HEIGHT, HIGHER, LOWER, SETTINGS}) {
             while (mapping.consumeClick()) {
                 // A click from an old connection must never enable cruise in the next world.
             }
         }
+    }
+
+    private static boolean saveSettings(ClientPreferences.Settings next) {
+        boolean saved = PREFERENCES.update(next);
+        STATE.setTargetHeight(PREFERENCES.get().targetHeight());
+        return saved;
+    }
+
+    private static void adjustTarget(int delta) {
+        int target = STATE.adjustHeight(delta);
+        var old = PREFERENCES.get();
+        boolean saved = saveSettings(new ClientPreferences.Settings(target, old.heightStep(), old.hudVisible(), old.corner()));
+        show(saved ? "target_height" : "settings_save_failed", target);
+    }
+
+    private static void renderHud(GuiGraphics graphics) {
+        Minecraft client = Minecraft.getInstance();
+        if (client.options.hideGui || !PREFERENCES.get().hudVisible()) return;
+        VehicleEntity vehicle = eligibleVehicle(client);
+        if (vehicle == null || (STATE.isActive() && !STATE.belongsTo(client.level, vehicle.getUUID()))) return;
+        AutopilotHud.render(graphics, STATE.forwardEnabled(), STATE.heightEnabled(), STATE.targetHeight(),
+                PREFERENCES.get(), STATE.heightEnabled() ? TELEMETRY.reason(System.nanoTime()) : "",
+                PREFERENCES.loadFailed(), PREFERENCES.saveFailed());
     }
 
     /** Called only at the original mod's local pilot input site. */
@@ -164,6 +207,7 @@ public final class AircraftAutoForward implements ClientModInitializer {
             warning(terrain.failure());
             return blocked;
         }
+        TELEMETRY.tracking(System.nanoTime());
         if (current instanceof AirplaneEntity plane) {
             float pitch = AirplaneAltitudeController.control(terrain.bottom(), terrain.ground(),
                     terrain.aheadGround(), STATE.targetHeight(), current.getDeltaMovement().y,

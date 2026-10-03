@@ -1,6 +1,6 @@
 plugins { id 'java-library'; id 'net.neoforged.moddev.legacyforge' version '2.0.148' }
 group = 'dev.xuancrane'
-version = '1.3.0'
+version = '1.4.0'
 java { toolchain.languageVersion = JavaLanguageVersion.of(17); withSourcesJar() }
 repositories { mavenCentral(); maven { url = 'https://api.modrinth.com/maven' } }
 dependencies {
@@ -18,3 +18,8 @@ legacyForge {
 }
 dependencies { modImplementation 'maven.modrinth:immersive-aircraft:aDUlOdzA' }
 tasks.named('jar', Jar) { manifest.attributes('Implementation-Version': project.version, 'MixinConfigs': 'aircraft_autoforward.mixins.json') }
+
+// Optional external build directory keeps large generated artifacts off the source drive.
+if (providers.gradleProperty('autopilotBuildDir').isPresent()) {
+    layout.buildDirectory = file(providers.gradleProperty('autopilotBuildDir').get())
+}

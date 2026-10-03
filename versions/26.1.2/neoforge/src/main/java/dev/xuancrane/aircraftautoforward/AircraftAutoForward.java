@@ -17,6 +17,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.common.NeoForge;
@@ -30,6 +31,8 @@ public final class AircraftAutoForward {
     private static final Set<String> SUPPORTED = Set.of("airship", "cargo_airship", "warship", "gyrodyne",
             "biplane", "quadrocopter", "bamboo_hopper");
     private static final CruiseState STATE = new CruiseState();
+    private static final FlightTelemetry TELEMETRY = new FlightTelemetry();
+    private static ClientPreferences PREFERENCES;
     private static String lastWarning = "";
     private static long lastWarningNanos;
     private static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "controls"));
@@ -39,6 +42,7 @@ public final class AircraftAutoForward {
     private static final KeyMapping HEIGHT = key("height", GLFW.GLFW_KEY_H);
     private static final KeyMapping HIGHER = key("higher", GLFW.GLFW_KEY_PAGE_UP);
     private static final KeyMapping LOWER = key("lower", GLFW.GLFW_KEY_PAGE_DOWN);
+    private static final KeyMapping SETTINGS = key("settings", GLFW.GLFW_KEY_UNKNOWN);
 
     private static KeyMapping key(String name, int code) {
         return new KeyMapping("key.aircraft_autoforward." + name, KeyConflictContext.IN_GAME,
@@ -46,17 +50,53 @@ public final class AircraftAutoForward {
     }
 
     public AircraftAutoForward(IEventBus modBus) {
+        initializePreferences();
         modBus.addListener(this::registerKeys);
         NeoForge.EVENT_BUS.addListener(this::beforeTick);
         NeoForge.EVENT_BUS.addListener(this::afterTick);
         NeoForge.EVENT_BUS.addListener(this::logout);
+        NeoForge.EVENT_BUS.addListener(this::renderHud);
     }
+
+    private void renderHud(RenderGuiEvent.Post event) { AutopilotHud.render(event.getGuiGraphics()); }
 
     private void registerKeys(RegisterKeyMappingsEvent event) {
         event.register(TOGGLE);
         event.register(HEIGHT);
         event.register(HIGHER);
         event.register(LOWER);
+        event.register(SETTINGS);
+    }
+
+
+    private static void initializePreferences() {
+        PREFERENCES = new ClientPreferences(Minecraft.getInstance().gameDirectory.toPath()
+                .resolve("config").resolve("aircraft_autoforward.properties"));
+        STATE.setTargetHeight(PREFERENCES.get().targetHeight());
+    }
+    public static ClientPreferences.Settings settings() { return PREFERENCES.get(); }
+    public static boolean applySettings(ClientPreferences.Settings settings) {
+        boolean saved = PREFERENCES.update(settings);
+        STATE.setTargetHeight(PREFERENCES.get().targetHeight());
+        if (!saved) show("save_failed");
+        return saved;
+    }
+    private static void adjustClearance(int direction) {
+        var preferences = settings();
+        int target = STATE.adjustHeight(direction * preferences.heightStep());
+        boolean saved = applySettings(new ClientPreferences.Settings(target, preferences.heightStep(), preferences.hudVisible(), preferences.corner()));
+        if (saved) show("target_height", target);
+    }
+    public record HudSnapshot(boolean forward, boolean height, int targetHeight, String reason, boolean preferencesError) {}
+    /** Read-only snapshot, including ownership check so an old vehicle cannot leak its state. */
+    public static HudSnapshot hudSnapshot() {
+        Minecraft client = Minecraft.getInstance();
+        VehicleEntity vehicle = eligibleVehicle(client);
+        if (PREFERENCES == null || vehicle == null) return null;
+        boolean sameVehicle = STATE.belongsTo(client.level, vehicle.getUUID());
+        boolean height = sameVehicle && STATE.heightEnabled();
+        return new HudSnapshot(sameVehicle && STATE.forwardEnabled(), height, STATE.targetHeight(),
+                height ? TELEMETRY.reason(System.nanoTime()) : "", PREFERENCES.loadFailed() || PREFERENCES.saveFailed());
     }
 
     private static VehicleEntity eligibleVehicle(Minecraft client) {
@@ -85,8 +125,10 @@ public final class AircraftAutoForward {
         Minecraft client = Minecraft.getInstance();
         VehicleEntity vehicle = eligibleVehicle(client);
         if (STATE.validate(client.level, vehicle == null ? null : vehicle.getUUID(), vehicle != null)) {
+            TELEMETRY.reset();
             show("reset");
         }
+        if (vehicle == null || !STATE.heightEnabled()) TELEMETRY.reset();
         return vehicle;
     }
 
@@ -98,6 +140,7 @@ public final class AircraftAutoForward {
 
     private static void warning(String key) {
         long now = System.nanoTime();
+        TELEMETRY.paused(key, now);
         if (!key.equals(lastWarning) || now - lastWarningNanos > 3_000_000_000L) {
             show(key);
             lastWarning = key;
@@ -115,6 +158,11 @@ public final class AircraftAutoForward {
             drainKeys();
             return;
         }
+        while (SETTINGS.consumeClick()) {
+            Minecraft.getInstance().setScreen(new AutopilotSettingsScreen(Minecraft.getInstance().screen));
+            drainKeys();
+            return;
+        }
         while (TOGGLE.consumeClick()) {
             if (vehicle != null) {
                 show(STATE.toggle(Minecraft.getInstance().level, vehicle.getUUID()) ? "on" : "off");
@@ -125,26 +173,28 @@ public final class AircraftAutoForward {
         while (HEIGHT.consumeClick()) {
             if (vehicle != null) {
                 boolean active = STATE.toggleHeight(Minecraft.getInstance().level, vehicle.getUUID());
+                TELEMETRY.reset();
                 show(active ? "height_on" : "height_off", STATE.targetHeight());
             } else if (Minecraft.getInstance().screen == null && Minecraft.getInstance().player != null) {
                 show("unavailable");
             }
         }
         while (HIGHER.consumeClick()) {
-            if (vehicle != null) show("target_height", STATE.adjustHeight(2));
+            if (vehicle != null) adjustClearance(1);
         }
         while (LOWER.consumeClick()) {
-            if (vehicle != null) show("target_height", STATE.adjustHeight(-2));
+            if (vehicle != null) adjustClearance(-1);
         }
     }
 
     private void logout(ClientPlayerNetworkEvent.LoggingOut event) {
         STATE.clear();
+        TELEMETRY.reset();
         drainKeys();
     }
 
     private static void drainKeys() {
-        for (KeyMapping mapping : new KeyMapping[]{TOGGLE, HEIGHT, HIGHER, LOWER}) {
+        for (KeyMapping mapping : new KeyMapping[]{TOGGLE, HEIGHT, HIGHER, LOWER, SETTINGS}) {
             while (mapping.consumeClick()) {
                 // A click from an old connection must never enable cruise in the next world.
             }
@@ -175,6 +225,7 @@ public final class AircraftAutoForward {
             warning(terrain.failure());
             return blocked;
         }
+        TELEMETRY.tracking(System.nanoTime());
         if (current instanceof AirplaneEntity plane) {
             float pitch = AirplaneAltitudeController.control(terrain.bottom(), terrain.ground(),
                     terrain.aheadGround(), STATE.targetHeight(), current.getDeltaMovement().y,

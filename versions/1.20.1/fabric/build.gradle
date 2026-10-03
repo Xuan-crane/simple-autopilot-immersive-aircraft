@@ -1,6 +1,6 @@
 plugins { id 'java-library'; id 'fabric-loom' version '1.9.2' }
 group = 'dev.xuancrane'
-version = '1.3.0'
+version = '1.4.0'
 java { toolchain.languageVersion = JavaLanguageVersion.of(17); withSourcesJar() }
 repositories { mavenCentral(); maven { url = 'https://api.modrinth.com/maven' } }
 dependencies {
@@ -21,3 +21,8 @@ dependencies {
 }
 loom { mixin { defaultRefmapName = 'aircraft_autoforward.refmap.json' } }
 tasks.named('jar', Jar) { manifest.attributes('Implementation-Version': project.version) }
+
+// Optional external build directory keeps large generated artifacts off the source drive.
+if (providers.gradleProperty('autopilotBuildDir').isPresent()) {
+    layout.buildDirectory = file(providers.gradleProperty('autopilotBuildDir').get())
+}
