@@ -1,0 +1,19 @@
+{
+  "key.categories.aircraft_autoforward": "Simple Autopilot for Immersive Aircraft",
+  "key.aircraft_autoforward.toggle": "Toggle Auto Forward",
+  "key.aircraft_autoforward.height": "Toggle Auto Altitude (independent)",
+  "key.aircraft_autoforward.higher": "Target clearance +2 blocks",
+  "key.aircraft_autoforward.lower": "Target clearance -2 blocks",
+  "message.aircraft_autoforward.height_on": "Auto altitude: ON, clearance %s blocks (forward toggle unchanged)",
+  "message.aircraft_autoforward.height_off": "Auto altitude: OFF (forward toggle unchanged)",
+  "message.aircraft_autoforward.target_height": "Target clearance: %s blocks (4–64, resets on restart)",
+  "message.aircraft_autoforward.unknown_ground": "Unknown ground / unloaded chunks: altitude suspended (toggles retained; airplanes keep auto throttle), disable the relevant toggle and take control",
+  "message.aircraft_autoforward.ceiling": "Insufficient overhead clearance: altitude suspended (toggles retained; airplanes keep auto throttle), disable the relevant toggle and take control",
+  "message.aircraft_autoforward.height_limit": "Target near world height limit: altitude suspended (toggles retained; airplanes keep auto throttle), disable the relevant toggle and take control",
+  "message.aircraft_autoforward.no_power": "Insufficient fuel / hunger: altitude suspended (toggles retained; airplanes keep auto throttle), disable the relevant toggle and take control",
+  "message.aircraft_autoforward.obstacle_near": "Obstacle too close / takeoff path blocked: altitude suspended (toggles retained; airplanes keep auto throttle), disable the relevant toggle and take control now",
+  "message.aircraft_autoforward.on": "Auto forward: ON (toggle key to turn off)",
+  "message.aircraft_autoforward.off": "Auto forward: OFF (altitude toggle unchanged)",
+  "message.aircraft_autoforward.unavailable": "Take the pilot seat of any of the seven original Immersive Aircraft aircraft",
+  "message.aircraft_autoforward.reset": "Pilot/vehicle/world changed: both automatic toggles reset"
+}

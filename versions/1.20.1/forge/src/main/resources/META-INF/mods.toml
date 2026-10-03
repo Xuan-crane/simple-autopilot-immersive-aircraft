@@ -1,0 +1,29 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="GPL-3.0-only"
+[[mods]]
+modId="aircraft_autoforward"
+version="1.3.0"
+displayName="Simple Autopilot for Immersive Aircraft"
+displayURL="https://github.com/Xuan-crane/simple-autopilot-immersive-aircraft"
+authors="Xuan-crane"
+displayTest="IGNORE_ALL_VERSION"
+description="Client-side independent forward and terrain-relative altitude assistance. Alpha."
+[[dependencies.aircraft_autoforward]]
+modId="forge"
+mandatory=true
+versionRange="[47.3.0,48)"
+ordering="NONE"
+side="BOTH"
+[[dependencies.aircraft_autoforward]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1]"
+ordering="NONE"
+side="BOTH"
+[[dependencies.aircraft_autoforward]]
+modId="immersive_aircraft"
+mandatory=true
+versionRange="[1.5.0,1.6)"
+ordering="AFTER"
+side="CLIENT"

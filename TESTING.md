@@ -1,32 +1,25 @@
-# Verification and manual testing
+# Verification and manual testing —1.3.0 Alpha
 
-Version 1.2.1 is an Alpha release. Automatic checks pass; actual flight in a game or multiplayer server remains unverified.
+Ten production Gradle builds passed, totaling 496 JUnit test executions with no failures, errors or skipped tests.1.20.1 Forge/Fabric run 48 each;1.21.1 and 1.21.11 NeoForge/Fabric run 51 each;26.1.2 and 26.2 NeoForge/Fabric run 49 each. Repeated controller tests run independently against each platform's actual compile dependencies.
 
-## Automated checks
+Checks cover independent V/H toggles, unrelated keys preserving enabled axes, lifecycle resets, rotorcraft/airplane routing, bounded altitude/pitch controllers, missing terrain, narrow obstacles, original-mod pilot-input bytecode and aircraft families. Where applicable, lower-bound 1.5.0 and current 1.5.2 artifacts and compiled mixin injection contracts are checked. Final jars were independently reviewed for the correct loader metadata, namespace, Java bytecode target and client-only entrypoints. Source/installation archives passed integrity and file-identity checks.
 
-The build targets Minecraft 1.21.1, NeoForge 21.1.1 and Immersive Aircraft 1.5.0. The 48 JUnit tests cover:
+No game was launched for this release. Actual loading, flight, multiplayer and modpack combinations remain unverified. Alpha status is intentional; automated checks do not guarantee collision avoidance.
 
-- Independent forward and altitude state, reset behavior and control routing for rotorcraft and airplanes.
-- Height correction, damping, bounded airplane pitch and simulated controller convergence.
-- Terrain sampling, missing terrain and obstacle prediction, including narrow obstacles.
-- The input injection point and required methods in the actual Immersive Aircraft dependency, plus the seven original aircraft families.
+## Run checks
 
-The supported metadata ranges are NeoForge `[21.1.1,21.2)` and Immersive Aircraft `[1.5.0,1.6)`. Relevant NeoForge APIs were compared between 21.1.1 and 21.1.243; the inspected pilot/control methods were compared between Immersive Aircraft 1.5.0 and 1.5.2. These checks do not replace gameplay tests of each version or modpack.
+Use Java 17 for 1.20.1, Java 21 for 1.21.x, Java 25 for 26.x. In a selected `versions/<minecraft>/<loader>/` directory run `gradlew.bat build --no-daemon --max-workers=2` (Windows) or `sh ./gradlew build --no-daemon --max-workers=2` (Linux/macOS). Reports are in `build/reports/tests/test/`. The root project is 1.21.1 NeoForge.
 
-Run `gradlew.bat build` on Windows, or `sh ./gradlew build` on Linux/macOS, using JDK 21. Reports appear in `build/reports/tests/test/index.html`.
+## Player test checklist
 
-## Gameplay checks still needed
+1. Use a backed-up test world and install only the jar matching the game and loader.
+2. Check all seven original aircraft and find all four keybindings. Take off manually before testing altitude assistance on fixed-wing aircraft.
+3. Toggle V and H independently; use other keys and chat while confirming enabled modes remain active and steering stays manual.
+4. Adjust Page Up/Down by 2 blocks; check default 10 and 4–64 bounds, slopes, trees, water and changes in ground height.
+5. Test walls, narrow columns and ceilings with room to recover. Check warnings and mode retention for unknown/unloaded terrain, missing power and world-height limits.
+6. Check reset on dismount, death, driver-seat loss, changing aircraft/world and disconnect.
+7. Test a multiplayer server with the original mod, while this addon is installed only on the client.
 
-Use a separate creative test world with an open flight area before relying on altitude assistance.
+Fixed-wing aircraft retain automatic throttle when V is on; they cannot hover. Turning V off restores manual input, but the original aircraft may retain its engine setting, so use its normal throttle-down control. H alone does not start an engine. High speed, steep terrain, upgrades, latency, rapid turns, automatic takeoff/landing and collisions with other entities are not certified.
 
-1. Check all seven aircraft. For airplanes, take off manually before enabling altitude hold.
-2. Toggle V and H independently. Confirm unrelated keys do not interrupt enabled axes and turning still works.
-3. Adjust clearance with Page Up/Down; fly across flat terrain, a hill, a drop, trees and water.
-4. Approach a wall, a narrow column and an overhang at a safe speed; verify warning behavior and manual takeover.
-5. Check unloaded terrain, insufficient power, overhead clearance and the world height limit. Airplanes retain auto throttle during altitude suspension when V is enabled.
-6. Confirm both toggles reset on dismount, death, aircraft/world changes and disconnect.
-7. Join a server with only the original Immersive Aircraft installed. Check responsiveness and control synchronization.
-
-High speeds, steep terrain, rapid turns, aircraft upgrades, server latency, other entities, automatic takeoff and landing have not been validated. Terrain scans only use loaded chunks and look ahead at most 48 blocks. This release does not plan routes or guarantee collision avoidance.
-
-When reporting a problem, include Minecraft, NeoForge and Immersive Aircraft versions, aircraft type, active toggles and steps to reproduce. Review logs for private information before attaching them.
+Report game/loader/original-mod versions, jar filename, aircraft type, active modes, reproduction steps and a crash report when relevant.

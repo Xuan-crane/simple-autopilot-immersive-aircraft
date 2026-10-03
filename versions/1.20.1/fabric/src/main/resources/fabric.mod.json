@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "aircraft_autoforward",
+  "version": "1.3.0",
+  "name": "Simple Autopilot for Immersive Aircraft",
+  "description": "Client-side independent forward and terrain-relative altitude assistance. Alpha.",
+  "authors": [
+    "Xuan-crane"
+  ],
+  "license": "GPL-3.0-only",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "dev.xuancrane.aircraftautoforward.AircraftAutoForward"
+    ]
+  },
+  "mixins": [
+    "aircraft_autoforward.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.14",
+    "minecraft": "1.20.1",
+    "java": ">=17",
+    "fabric-api": "*",
+    "immersive_aircraft": ">=1.5.0 <1.6.0"
+  }
+}

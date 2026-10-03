@@ -1,0 +1,19 @@
+{
+  "key.aircraft_autoforward.toggle": "切换自动前进",
+  "key.aircraft_autoforward.height": "切换自动高度（独立开关）",
+  "key.aircraft_autoforward.higher": "目标离地高度 +2 格",
+  "key.aircraft_autoforward.lower": "目标离地高度 -2 格",
+  "message.aircraft_autoforward.height_on": "自动高度：已开启，目标离地 %s 格（自动前进状态不变）",
+  "message.aircraft_autoforward.height_off": "自动高度：已关闭（自动前进状态不变）",
+  "message.aircraft_autoforward.target_height": "目标离地高度：%s 格（4–64 格，重启重置）",
+  "message.aircraft_autoforward.unknown_ground": "无法确认地面／区块未加载：定高暂停（开关保留，固定翼保留自动油门），请关闭对应开关后接管",
+  "message.aircraft_autoforward.ceiling": "上方空间不足：定高暂停（开关保留，固定翼保留自动油门），请关闭对应开关后接管",
+  "message.aircraft_autoforward.height_limit": "目标接近世界高度上限：定高暂停（开关保留，固定翼保留自动油门），请关闭对应开关后接管",
+  "message.aircraft_autoforward.no_power": "燃料／饥饿动力不足：定高暂停（开关保留，固定翼保留自动油门），请关闭对应开关后接管",
+  "message.aircraft_autoforward.obstacle_near": "前方障碍过近／起飞路径受阻：定高暂停（开关保留，固定翼保留自动油门），请立即关闭对应开关后接管",
+  "message.aircraft_autoforward.on": "自动前进：已开启（仅按前进开关关闭）",
+  "message.aircraft_autoforward.off": "自动前进：已关闭（自动高度状态不变）",
+  "message.aircraft_autoforward.unavailable": "请坐在沉浸式飞机任意一种飞机的驾驶位（共 7 种）",
+  "message.aircraft_autoforward.reset": "已离开驾驶位或切换世界：两个自动开关已重置",
+  "key.category.aircraft_autoforward.controls": "简单自动驾驶沉浸式飞机"
+}

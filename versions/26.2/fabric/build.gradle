@@ -1,0 +1,11 @@
+plugins { id 'java-library'; id 'net.fabricmc.fabric-loom' version '1.15.5' }
+group = 'dev.xuancrane'
+version = '1.3.0'
+base.archivesName = 'simple-autopilot-immersive-aircraft-26.2-fabric'
+java { toolchain.languageVersion = JavaLanguageVersion.of(25); withSourcesJar() }
+repositories { mavenCentral(); maven { url = 'https://api.modrinth.com/maven' } }
+dependencies { minecraft 'com.mojang:minecraft:26.2'; implementation 'net.fabricmc:fabric-loader:0.19.5'; implementation 'net.fabricmc.fabric-api:fabric-api:0.161.0+26.2' }
+dependencies { implementation 'maven.modrinth:immersive-aircraft:XMxN4Xeq'; testImplementation platform('org.junit:junit-bom:5.11.4'); testImplementation 'org.junit.jupiter:junit-jupiter'; testRuntimeOnly 'org.junit.platform:junit-platform-launcher'; testImplementation 'org.ow2.asm:asm-tree:9.9.1' }
+tasks.named('test', Test) { useJUnitPlatform() }
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+tasks.named('jar', Jar) { manifest.attributes('Implementation-Version': project.version); from('LICENSE') { rename { 'LICENSE_simple_autopilot' } } }
